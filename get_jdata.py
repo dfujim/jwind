@@ -156,12 +156,8 @@ def draw(col='Speed (kts)', window=5, ax=None, hours_shown=6):
     # get last datetime
     last_time = df['Date'].max()
 
-    # get epoch times
-    df.loc[:, 'Date'] = df['Date'].apply(lambda x: x.timestamp())
-    df['Date'] -= df['Date'].max()
-
-    # to hours
-    df['Date'] /= 3600
+    # convert to hours before last reading
+    df['Date'] = (df['Date'] - df['Date'].max()).dt.total_seconds() / 3600
 
     # crop to duration
     idx = df['Date'].abs() < hours_shown
