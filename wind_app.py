@@ -66,7 +66,7 @@ def compute_rolling_stats(df: pd.DataFrame, window_min: int) -> pd.DataFrame:
     return df.reset_index()
 
 
-def build_figure(df: pd.DataFrame, window_min: int) -> go.Figure:
+def build_figure(df: pd.DataFrame, window_min: int, uirevision: str = 'static') -> go.Figure:
     """
     Build the two-subplot Plotly figure.
 
@@ -164,6 +164,7 @@ def build_figure(df: pd.DataFrame, window_min: int) -> go.Figure:
     # ── Layout ─────────────────────────────────────────────────────────────────
 
     fig.update_layout(
+        uirevision=uirevision,
         height=680,
         hovermode='x unified',
         dragmode='zoom',
@@ -205,6 +206,7 @@ def build_figure(df: pd.DataFrame, window_min: int) -> go.Figure:
 _df_init = load_data()
 _min_date = _df_init['Date'].min().date()
 _max_date = _df_init['Date'].max().date()
+_today = pd.Timestamp.today().date()
 
 # ── App layout ────────────────────────────────────────────────────────────────
 
@@ -227,8 +229,8 @@ app.layout = html.Div([
                 id='date-range',
                 min_date_allowed=_min_date,
                 max_date_allowed=_max_date,
-                start_date=_min_date,
-                end_date=_max_date,
+                start_date=_today,
+                end_date=_today,
                 display_format='YYYY-MM-DD',
             ),
         ], style={'display': 'flex', 'flexDirection': 'column'}),
@@ -325,7 +327,7 @@ def update_graph(start_date, end_date, window, _n):
         )
         return fig, 'No data'
 
-    fig = build_figure(df, window or 5)
+    fig = build_figure(df, window or 5, uirevision=f"{start_date}_{end_date}")
     last_time = df['Date'].max().strftime('%Y-%m-%d %H:%M')
     return fig, f'Last reading: {last_time}'
 
