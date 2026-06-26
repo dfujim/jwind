@@ -3,6 +3,7 @@
 # Derek Fujimoto
 # June 2021
 
+import os
 import pandas as pd
 import numpy as np
 from PIL import Image
@@ -238,11 +239,13 @@ if __name__ == '__main__':
         df = pd.concat((df, pd.DataFrame({'Date':[date], 'Speed (kts)':[wind], 'Direction (deg)':[direction]})),
                     ignore_index=True)
 
-        # check data frame length
-        if len(df) > 60*12:
-            df.drop(index=df.index[0],
-                    axis=0,
-                    inplace=True)
+        # Trim oldest rows to stay under 1 GB; estimate row budget from current file size
+        max_bytes = 1 * 1024**3
+        if os.path.exists(filename) and len(df) > 1:
+            bytes_per_row = os.path.getsize(filename) / len(df)
+            max_rows = int(max_bytes / bytes_per_row)
+            if len(df) > max_rows:
+                df = df.iloc[-max_rows:]
 
         # write to file
         df.to_csv(filename, index=False)
